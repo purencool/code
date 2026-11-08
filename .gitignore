@@ -1,0 +1,25 @@
+# Composer dependencies
+/vendor
+
+# Compiled application binaries
+/builds
+
+# IDEs, Editors, and Virtual Environments
+/.idea
+/.vscode
+/.vagrant
+/.agent
+
+# Testing
+.phpunit.result.cache
+
+# Environment variables (Security)
+.env
+.env.*
+!.env.example
+.agent/.env
+
+# OS generated files
+.DS_Store
+Thumbs.db
+i.sh
