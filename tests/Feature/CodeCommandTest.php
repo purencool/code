@@ -66,14 +66,21 @@ class CodeCommandTest extends TestCase
     {
         $this->skipIfOllamaUnavailable();
 
+        $markdownTask = <<<MARKDOWN
+Target Type: TDD
+Target Test: tests/Unit/CalculatorTest.php
+Target Class: app/Services/Calculator.php
+Task:
+- Write a Calculator class with add method
+MARKDOWN;
+
         try {
             $this->artisan('code', [
-                'task' => 'Write a Calculator class with add method',
+                'task' => $markdownTask,
                 '--workspace' => $this->tempWorkspace,
                 '--auto-approve' => true,
             ])->assertExitCode(0);
         } catch (Throwable $e) {
-            // If Ollama encounters an inference failure, model missing, or connection error, skip the test
             if (
                 str_contains($e->getMessage(), 'Neuron AI request failed') ||
                 str_contains($e->getMessage(), 'AI API Request Failed') ||
@@ -89,9 +96,6 @@ class CodeCommandTest extends TestCase
         }
     }
 
-    /**
-     * Skip test if Ollama is unreachable or does not have the target model installed.
-     */
     private function skipIfOllamaUnavailable(): void
     {
         $config = $this->context->load();
@@ -106,14 +110,12 @@ class CodeCommandTest extends TestCase
             $host = '127.0.0.1';
         }
 
-        // 1. Socket connectivity check (500ms timeout)
         $socket = @fsockopen($host, (int) $port, $errno, $errstr, 0.5);
         if (!$socket) {
             $this->markTestSkipped("Ollama is not running on {$host}:{$port}. Skipping test.");
         }
         fclose($socket);
 
-        // 2. Query Ollama /api/tags to verify service and model availability
         $ctx = stream_context_create(['http' => ['timeout' => 1]]);
         $tagsJson = @file_get_contents("http://{$host}:{$port}/api/tags", false, $ctx);
 
