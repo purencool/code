@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Tdd;
+namespace App\Services\Code;
 
 class PathNamespaceResolver
 {

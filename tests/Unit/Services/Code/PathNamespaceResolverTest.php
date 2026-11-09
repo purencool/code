@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Services\Tdd;
+namespace Tests\Unit\Services\Code;
 
-use App\Services\Tdd\PathNamespaceResolver;
+use App\Services\Code\PathNamespaceResolver;
 use Tests\TestCase;
 
 /**
- * @covers \App\Services\Tdd\PathNamespaceResolver
+ * @covers \App\Services\Code\PathNamespaceResolver
  */
 class PathNamespaceResolverTest extends TestCase
 {

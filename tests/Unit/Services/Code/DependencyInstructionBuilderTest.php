@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Services\Tdd;
+namespace Tests\Unit\Services\Code;
 
-use App\Services\Tdd\DependencyInstructionBuilder;
+use App\Services\Code\DependencyInstructionBuilder;
 use Tests\TestCase;
 
 /**
- * @covers \App\Services\Tdd\DependencyInstructionBuilder
+ * @covers \App\Services\Code\DependencyInstructionBuilder
  */
 class DependencyInstructionBuilderTest extends TestCase
 {

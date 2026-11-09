@@ -2,22 +2,25 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Tdd;
+namespace App\Services\Code;
 
-class CttTestPromptBuilder
+use App\Services\Code\Commands\TaskMetadataParser;
+
+class TestGenerationPromptBuilder
 {
     public function __construct(
         private readonly TaskMetadataParser $metadataParser = new TaskMetadataParser(),
         private readonly PathNamespaceResolver $pathResolver = new PathNamespaceResolver(),
+        private readonly DependencyInstructionBuilder $dependencyBuilder = new DependencyInstructionBuilder(),
     ) {
     }
 
     /**
-     * Step 1 (CTT): Generate tests for an existing production class file.
+     * Step 1 (TDD): Generate test from user requirements.
      *
      * @param array<string, mixed> $config
      */
-    public function build(string $task, string $classContent, array $config): string
+    public function build(string $task, string $wiringContext, array $config): string
     {
         $meta = $this->metadataParser->parse($task);
         $rules = $this->formatRules($config);
@@ -31,36 +34,46 @@ class CttTestPromptBuilder
         $implClass = $this->pathResolver->resolveClassNameFromPath($implPath, 'GeneratedClass');
         $implFqcn = $implNs . '\\' . $implClass;
 
+        $depInstructions = $this->dependencyBuilder->buildTestMockInstructions($meta['dependencies'], $implClass);
+
         return "SYSTEM INSTRUCTION:\n"
-            . "You are an automated test engineer executing CTT (Code-To-Test characterization testing).\n"
-            . "Inspect the existing PHP production class provided below and generate a complete PHPUnit test suite.\n\n"
+            . "You are an automated code generator executing Step 1 (Test Generation) of TDD.\n"
+            . "Write a complete, executable PHPUnit test suite implementing all user requirements.\n\n"
             . "### TARGET ARCHITECTURE (STRICT):\n"
             . "- Target Test File: {$testPath}\n"
             . "- Target Test Namespace: {$testNs}\n"
             . "- Target Test Class Name: {$testClass}\n"
             . "- Target Production Class: {$implFqcn}\n"
             . "- Target Production File: {$implPath}\n\n"
-            . "### EXISTING PRODUCTION SOURCE CODE:\n"
-            . "```php\n"
-            . $classContent . "\n"
-            . "```\n\n"
-            . "### ADDITIONAL TEST REQUIREMENTS:\n"
-            . ($meta['task'] !== '' ? $meta['task'] : 'Cover all public methods, return values, exceptions, and branches.') . "\n\n"
+            . $depInstructions
+            . "### USER REQUIREMENTS:\n"
+            . $meta['task'] . "\n\n"
             . "### ARCHITECTURAL RULES:\n"
             . $rules . "\n\n"
-            . "### DOCUMENTATION & TESTING RULES:\n"
-            . "- Inspect constructor parameters: mock interfaces or classes as needed using '\$this->createMock()'.\n"
+            . "### CODEBASE WIRING:\n"
+            . $wiringContext . "\n\n"
+            . "### DOCUMENTATION & FORMATTING REQUIREMENTS:\n"
             . "- MUST add a class PHPDoc block with '@covers \\{$implFqcn}'.\n"
-            . "- MUST add descriptive PHPDoc comments above every test method.\n"
-            . "- Class MUST be named exactly '{$testClass}' and extend 'PHPUnit\\Framework\\TestCase'.\n\n"
+            . "- MUST add a descriptive PHPDoc comment above every test method explaining what it tests.\n"
+            . "- Class MUST be named exactly '{$testClass}' and extend 'PHPUnit\\Framework\\TestCase'.\n"
+            . "- MUST instantiate and test '{$implClass}' (imported via 'use {$implFqcn};').\n\n"
             . "### OUTPUT FORMAT:\n"
             . "Output ONLY the complete PHP test file inside a single markdown code block.\n"
-            . "Do NOT return JSON. Do NOT explain outside the code block.\n\n"
+            . "Do NOT return JSON. Do NOT explain your code outside the block.\n\n"
+            . "Example format:\n"
             . "```php\n"
             . "<?php\n\n"
             . "declare(strict_types=1);\n\n"
             . "namespace {$testNs};\n\n"
-            . "// ...\n"
+            . "use {$implFqcn};\n"
+            . "use PHPUnit\\Framework\\TestCase;\n\n"
+            . "/**\n"
+            . " * @covers \\{$implFqcn}\n"
+            . " */\n"
+            . "class {$testClass} extends TestCase\n"
+            . "{\n"
+            . "    // Tests...\n"
+            . "}\n"
             . "```";
     }
 

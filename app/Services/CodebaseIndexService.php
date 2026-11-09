@@ -246,8 +246,8 @@ class CodebaseIndexService
         $summary = implode("\n", $lines);
 
         try {
-            if (class_exists(TddWorkflowService::class)) {
-                $ref = new \ReflectionMethod(TddWorkflowService::class, 'generateTests');
+            if (class_exists(CodeWorkflowService::class)) {
+                $ref = new \ReflectionMethod(CodeWorkflowService::class, 'generateTests');
                 $param = $ref->getParameters()[1] ?? null;
                 if ($param && $param->getType() && str_contains((string) $param->getType(), 'array')) {
                     return [

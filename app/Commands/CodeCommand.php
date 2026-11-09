@@ -6,10 +6,10 @@ namespace App\Commands;
 
 use App\Services\AgentContextService;
 use App\Services\CodebaseIndexService;
-use App\Services\Tdd\BatchTaskParser;
-use App\Services\Tdd\TaskLogger;
-use App\Services\Tdd\TddPromptBuilder;
-use App\Services\TddWorkflowService;
+use App\Services\Code\BatchTaskParser;
+use App\Services\Code\TaskLogger;
+use App\Services\Code\Commands\TddPromptBuilder;
+use App\Services\CodeWorkflowService;
 use App\Services\Testing\TestRunnerService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
@@ -27,7 +27,7 @@ class CodeCommand extends Command
     public function handle(
         AgentContextService $context,
         CodebaseIndexService $indexer,
-        TddWorkflowService $workflow,
+        CodeWorkflowService $workflow,
         TestRunnerService $testRunner,
         BatchTaskParser $batchParser,
         TaskLogger $taskLogger,
@@ -66,25 +66,53 @@ class CodeCommand extends Command
 
         foreach ($tasks as $index => $currentTask) {
             $stepNum = $index + 1;
-            $meta = $promptBuilder->parseTaskMetadata($currentTask);
+            
+            // Extract task details and metadata
+            $currentTask = $taskData['task'] ?? (is_string($taskData) ? $taskData : '');
+            $meta = $taskData['meta'] ?? $taskData;
+            $type = strtolower($meta['type'] ?? 'tdd');
 
-            $this->line("==================================================");
-            $this->line("<comment>Task [{$stepNum}/{$totalTasks}]</comment>");
-            $this->line("==================================================");
-            $this->line("Target Type  : <info>" . $meta['target_type'] . "</info>");
-            $this->line("Target Test  : <info>" . $meta['target_test'] . "</info>");
-            $this->line("Target Class : <info>" . $meta['target_class'] . "</info>");
-            if (!empty($meta['dependencies'])) {
-                $this->line("Dependencies : <comment>" . implode(', ', $meta['dependencies']) . "</comment>");
-            }
-            $this->line("--------------------------------------------------");
-            $this->line(trim($meta['task']) . "\n");
+            $this->line(str_repeat('=', 60));
+            $this->info("Task [{$stepNum}/{$totalTasks}] - Type: [" . strtoupper($type) . "]");
+            $this->line("<comment>Description:</comment> {$currentTask}");
+            $this->line(str_repeat('=', 60));
 
-            if ($meta['target_type'] === 'CTT') {
-                $this->handleCttTask($stepNum, $totalTasks, $currentTask, $meta, $context, $workflow, $testRunner, $taskLogger, $config);
-            } else {
-                $this->handleTddTask($stepNum, $totalTasks, $currentTask, $meta, $context, $indexer, $workflow, $testRunner, $taskLogger, $config);
-            }
+            // Dispatch to the appropriate handler based on task type
+            match ($type) {
+                'tdd' => $this->handleTddTask(
+                    stepNum: $stepNum,
+                    totalTasks: $totalTasks,
+                    currentTask: $currentTask,
+                    meta: $meta,
+                    config: $config,
+                    autoApprove: $autoApprove
+                ),
+                'ctt' => $this->handleCttTask(
+                    stepNum: $stepNum,
+                    totalTasks: $totalTasks,
+                    currentTask: $currentTask,
+                    meta: $meta,
+                    config: $config
+                ),
+                'ccc' => $this->handleCccTask(
+                    stepNum: $stepNum,
+                    totalTasks: $totalTasks,
+                    currentTask: $currentTask,
+                    meta: $meta,
+                    config: $config,
+                    autoApprove: $autoApprove
+                ),
+                'etc' => $this->handleEtcTask(
+                    stepNum: $stepNum,
+                    totalTasks: $totalTasks,
+                    currentTask: $currentTask,
+                    meta: $meta,
+                    config: $config
+                ),
+                default => $this->error("Unknown task type '{$type}' encountered on step {$stepNum}. Skipping.")
+            };
+
+            $this->line('');
         }
 
         $this->info("All {$totalTasks} task(s) processed.");
@@ -104,7 +132,7 @@ class CodeCommand extends Command
         array $meta,
         AgentContextService $context,
         CodebaseIndexService $indexer,
-        TddWorkflowService $workflow,
+        CodeWorkflowService $workflow,
         TestRunnerService $testRunner,
         TaskLogger $taskLogger,
         array $config
@@ -171,7 +199,7 @@ class CodeCommand extends Command
         string $currentTask,
         array $meta,
         AgentContextService $context,
-        TddWorkflowService $workflow,
+        CodeWorkflowService $workflow,
         TestRunnerService $testRunner,
         TaskLogger $taskLogger,
         array $config

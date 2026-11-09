@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Services\Tdd;
+namespace Tests\Unit\Services\Code\Commands;
 
-use App\Services\Tdd\CttTestPromptBuilder;
+use App\Services\Code\Commands\CttTestPromptBuilder;
 use Tests\TestCase;
 
 /**
- * @covers \App\Services\Tdd\CttTestPromptBuilder
+ * @covers \App\Services\Code\CttTestPromptBuilder
  */
 class CttTestPromptBuilderTest extends TestCase
 {

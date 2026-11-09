@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Tdd;
+namespace App\Services\Code;
 
 use App\Services\AgentContextService;
 use Illuminate\Support\Facades\File;

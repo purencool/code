@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Services\Tdd;
+namespace Tests\Unit\Services\Code;
 
-use App\Services\Tdd\TestGenerationPromptBuilder;
+use App\Services\Code\TestGenerationPromptBuilder;
 use Tests\TestCase;
 
 /**
- * @covers \App\Services\Tdd\TestGenerationPromptBuilder
+ * @covers \App\Services\Code\TestGenerationPromptBuilder
  */
 class TestGenerationPromptBuilderTest extends TestCase
 {

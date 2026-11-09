@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Services\Tdd;
+namespace Tests\Unit\Services\Code;
 
-use App\Services\Tdd\TaskMetadataParser;
+use App\Services\Code\Commands\TaskMetadataParser;
 use RuntimeException;
 use Tests\TestCase;
 
 /**
- * @covers \App\Services\Tdd\TaskMetadataParser
+ * @covers \App\Services\Code\TaskMetadataParser
  */
 class TaskMetadataParserTest extends TestCase
 {

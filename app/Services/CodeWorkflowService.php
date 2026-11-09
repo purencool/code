@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Services\AI\AIProviderFactory;
-use App\Services\Tdd\TddPromptBuilder;
-use App\Services\Tdd\TddResponseParser;
+use App\Services\Code\TddPromptBuilder;
+use App\Services\Code\TddResponseParser;
 use App\Services\Testing\TestRunnerService;
 use App\Services\Testing\TestResult;
 use Illuminate\Support\Facades\File;
@@ -15,7 +15,7 @@ use NeuronAI\Chat\Messages\UserMessage;
 use NeuronAI\Providers\AIProviderInterface;
 use RuntimeException;
 
-class TddWorkflowService
+class CodeWorkflowService
 {
     protected AIProviderFactory $providerFactory;
     protected TddPromptBuilder $promptBuilder;
@@ -100,7 +100,7 @@ class TddWorkflowService
     }
 
     /**
-     * TDD Step 3: Implement, locally test, and automatically repair until green.
+     * Implement, locally test, and automatically repair until green.
      *
      * @param array{explanation?: string, test_files: array<int, array{path: string, code: string}>} $testPlan
      * @param array<string, mixed> $config

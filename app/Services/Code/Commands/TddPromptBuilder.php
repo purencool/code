@@ -2,7 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Tdd;
+namespace App\Services\Code\Commands;
+
+use App\Services\Code\TestGenerationPromptBuilder;
+use App\Services\Code\Commands\CttTestPromptBuilder;
+use App\Services\Code\ImplementationPromptBuilder;
+use App\Services\Code\PathNamespaceResolver;
 
 class TddPromptBuilder
 {
